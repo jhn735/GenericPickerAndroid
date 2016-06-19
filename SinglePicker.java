@@ -1,15 +1,12 @@
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,69 +21,102 @@ public class SinglePicker extends LinearLayout {
     protected List<String> elements;
     protected int current_element_index = 0;
 
+
     protected Button up_arrow;
     protected Button down_arrow;
+    protected int arrow_visibility;
 
     protected TextView element_display;
 
-    protected final int total_weight = 20;
-    protected final int arrow_button_weight = 7;
-    protected final int element_display_weight = 6;
+    protected final int total_weight = 9;
+    protected final int arrow_button_weight = 4;
+    protected final int element_display_weight = 1;
 
 
-    public SinglePicker(Context context, AttributeSet attrs, List<String> elements) {
-        super(context, attrs);
-        this.elements = elements;
+    public SinglePicker(Context context){
+        super(context);
         setup_layout();
     }
 
     public SinglePicker(Context context, AttributeSet attrs){
         super(context, attrs);
-        this.elements = new ArrayList<>();
         setup_layout();
     }
 
     protected void setup_layout(){
+        this.elements = new ArrayList<>();
+
+        up_arrow = new Button(this.getContext());
+        down_arrow = new Button(this.getContext());
+        element_display = new TextView(this.getContext());
+
+        //set the weightsum
         this.setWeightSum(this.total_weight);
+        this.setOrientation(VERTICAL);
+
+        this.setGravity(Gravity.CENTER_VERTICAL);
+        ViewGroup.LayoutParams arrow_button_params =
+            new ViewGroup.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
         //set the up arrow button
         up_arrow = new Button(this.getContext());
             up_arrow.setText("▲");
             up_arrow.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    view_prev_element();
+                    view_next_element();
                 }
             });
+            up_arrow.setLayoutParams(arrow_button_params);
+            up_arrow.setVisibility(GONE);
         this.addView(up_arrow);
-
-
-        //set up the element display
-        element_display = new TextView(this.getContext());
-            this.set_displayed_element(this.current_element_index);
-        this.addView(element_display);
 
         //set up the down arrow
         down_arrow = new Button(this.getContext());
             down_arrow.setText("▼");
             down_arrow.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    view_next_element();
-                }
-            });
+            @Override
+            public void onClick(View v) {
+                view_prev_element();
+            }
+        });
+            down_arrow.setLayoutParams(arrow_button_params);
+            down_arrow.setVisibility(GONE);
         this.addView(down_arrow);
 
+        //if there is only one element or no elements then the arrows shouldn't be there
+        set_arrow_visibility((elements.size() > 0)?VISIBLE:GONE);
+
+        //set up the element display
+        element_display = new TextView(this.getContext());
+            //this.set_displayed_element(this.current_element_index);
+            element_display.setTextAlignment(TEXT_ALIGNMENT_CENTER);
+            element_display.setTextSize(35f);
+        element_display.setLayoutParams(
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                element_display.setTextAlignment(TEXT_ALIGNMENT_CENTER);
+
+        this.addView(element_display, 1);
     }
 
+    protected void set_arrow_visibility(int visibility){
+        this.arrow_visibility = visibility;
+        up_arrow.setVisibility(this.arrow_visibility);
+        down_arrow.setVisibility(this.arrow_visibility);
+    }
     /** Sets the displayed element the next element in the list.*/
     public void view_next_element(){
-        current_element_index++;
+        int max_index = elements.size() - 1;
+        if(current_element_index < max_index) current_element_index++;
+        else current_element_index = 0;
     set_displayed_element(current_element_index);
     }
 
     /** Sets the displayed element to the previous element in the list.*/
     public void view_prev_element(){
-        current_element_index--;
+        if(current_element_index > 0) current_element_index--;
+        else current_element_index = this.elements.size()-1;
+
     set_displayed_element(current_element_index);
     }
 
@@ -94,7 +124,7 @@ public class SinglePicker extends LinearLayout {
      *  @param element_index The index of the element to be displayed.
      */
     public void set_displayed_element(int element_index){
-
+        this.element_display.setText(elements.get(element_index));
     }
 
     /** Sets the elements display by the picker. The order of elements is lowest-first.
@@ -102,6 +132,16 @@ public class SinglePicker extends LinearLayout {
      */
     public void set_elements(String...new_elements){
         this.elements = new ArrayList<String>(Arrays.asList(new_elements));
+            int visibility = (elements.size() > 1)?VISIBLE:GONE;
+        set_arrow_visibility(visibility);
+        this.set_displayed_element(0);
     }
 
+    /** Returns the string that is currently being displayed.
+     * @return String that is currently being displayed.
+     */
+    @Override
+    public String toString(){
+        return (String)this.element_display.getText();
+    }
 }
