@@ -21,6 +21,8 @@ public class SinglePicker extends LinearLayout {
     protected List<String> elements;
     protected int current_element_index = 0;
 
+    public int get_element_index(){return current_element_index;}
+
 
     protected Button up_arrow;
     protected Button down_arrow;
@@ -68,7 +70,6 @@ public class SinglePicker extends LinearLayout {
                 }
             });
             up_arrow.setLayoutParams(arrow_button_params);
-            up_arrow.setVisibility(GONE);
         this.addView(up_arrow);
 
         //set up the down arrow
@@ -81,11 +82,7 @@ public class SinglePicker extends LinearLayout {
             }
         });
             down_arrow.setLayoutParams(arrow_button_params);
-            down_arrow.setVisibility(GONE);
         this.addView(down_arrow);
-
-        //if there is only one element or no elements then the arrows shouldn't be there
-        set_arrow_visibility((elements.size() > 0)?VISIBLE:GONE);
 
         //set up the element display
         element_display = new TextView(this.getContext());
@@ -99,14 +96,15 @@ public class SinglePicker extends LinearLayout {
         this.addView(element_display, 1);
     }
 
-    protected void set_arrow_visibility(int visibility){
+    public void set_arrow_visibility(int visibility){
         this.arrow_visibility = visibility;
         up_arrow.setVisibility(this.arrow_visibility);
         down_arrow.setVisibility(this.arrow_visibility);
     }
+
     /** Sets the displayed element the next element in the list.*/
     public void view_next_element(){
-        int max_index = elements.size() - 1;
+        int max_index = this.size() - 1;
         if(current_element_index < max_index) current_element_index++;
         else current_element_index = 0;
     set_displayed_element(current_element_index);
@@ -115,7 +113,7 @@ public class SinglePicker extends LinearLayout {
     /** Sets the displayed element to the previous element in the list.*/
     public void view_prev_element(){
         if(current_element_index > 0) current_element_index--;
-        else current_element_index = this.elements.size()-1;
+        else current_element_index = this.size()-1;
 
     set_displayed_element(current_element_index);
     }
@@ -132,9 +130,11 @@ public class SinglePicker extends LinearLayout {
      */
     public void set_elements(String...new_elements){
         this.elements = new ArrayList<String>(Arrays.asList(new_elements));
-            int visibility = (elements.size() > 1)?VISIBLE:GONE;
-        set_arrow_visibility(visibility);
         this.set_displayed_element(0);
+    }
+
+    public int size(){
+        return elements.size();
     }
 
     /** Returns the string that is currently being displayed.
